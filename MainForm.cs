@@ -105,6 +105,9 @@ namespace MySqlSvr
             }
         }
 
+        //funkcja logowanie do serwera
+        //gdy dane logowanie są poprawne, to zwraca identyfikator gracza
+        //w przeciwnym wypadku zwraca 0
         private ulong login(string login, string md5pass)
         {
             //wprowadzenie danych do logowania
@@ -187,7 +190,7 @@ namespace MySqlSvr
                     MessageBox.Show(e.ToString(), "Błąd tworzenia wątku klienta!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
             }
-
+            Thread.Sleep(1);
             server.Stop();
         }
 
@@ -195,15 +198,13 @@ namespace MySqlSvr
         {
             Socket socket = s as Socket;
             code = new UTF8Encoding();
-            bool Connected = true;
             string clientName = socket.RemoteEndPoint.ToString();
             byte[] buf = new byte[4096];
 
             addLogAsynch("[Klient]: Klient " + clientName + " połączył się z serwerem.");
 
-            while (socket.Connected && isRunning && Connected)
+            while (socket.Connected && isRunning && IsConnected(socket))
             {
-                Connected = IsConnected(socket);
                 if (socket.Available > 0)
                 {
                     //komenda wczytana z bufora
