@@ -1,0 +1,9 @@
+D:\Inne\Uczelnia\III rok\PPZ\MySqlSvr\MySqlSvr\obj\x86\Debug\ResolveAssemblyReference.cache
+D:\Inne\Uczelnia\III rok\PPZ\MySqlSvr\MySqlSvr\obj\x86\Debug\GenerateResource.read.1.tlog
+D:\Inne\Uczelnia\III rok\PPZ\MySqlSvr\MySqlSvr\obj\x86\Debug\GenerateResource.write.1.tlog
+D:\Inne\Uczelnia\III rok\PPZ\MySqlSvr\MySqlSvr\bin\Debug\GameServer.exe
+D:\Inne\Uczelnia\III rok\PPZ\MySqlSvr\MySqlSvr\bin\Debug\GameServer.pdb
+D:\Inne\Uczelnia\III rok\PPZ\MySqlSvr\MySqlSvr\obj\x86\Debug\GameServer.Properties.Resources.resources
+D:\Inne\Uczelnia\III rok\PPZ\MySqlSvr\MySqlSvr\obj\x86\Debug\GameServer.exe
+D:\Inne\Uczelnia\III rok\PPZ\MySqlSvr\MySqlSvr\obj\x86\Debug\GameServer.pdb
+D:\Inne\Uczelnia\III rok\PPZ\MySqlSvr\MySqlSvr\obj\x86\Debug\GameServer.MainForm.resources

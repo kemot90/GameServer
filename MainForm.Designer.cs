@@ -1,4 +1,4 @@
-﻿namespace MySqlSvr
+﻿namespace GameServer
 {
     partial class MainForm
     {

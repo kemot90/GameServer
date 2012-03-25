@@ -12,7 +12,7 @@ using System.Net;
 using System.Net.Sockets;
 using Commands;
 
-namespace MySqlSvr
+namespace GameServer
 {
     public partial class MainForm : Form
     {
