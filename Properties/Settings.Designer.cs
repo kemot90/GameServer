@@ -22,5 +22,53 @@ namespace GameServer.Properties {
                 return defaultInstance;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("localhost")]
+        public string mysqlHost {
+            get {
+                return ((string)(this["mysqlHost"]));
+            }
+            set {
+                this["mysqlHost"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("rpg")]
+        public string mysqlBase {
+            get {
+                return ((string)(this["mysqlBase"]));
+            }
+            set {
+                this["mysqlBase"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("root")]
+        public string mysqlLogin {
+            get {
+                return ((string)(this["mysqlLogin"]));
+            }
+            set {
+                this["mysqlLogin"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string mysqlPass {
+            get {
+                return ((string)(this["mysqlPass"]));
+            }
+            set {
+                this["mysqlPass"] = value;
+            }
+        }
     }
 }

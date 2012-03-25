@@ -28,6 +28,21 @@ namespace GameServer
         //wątek obsługujący listenera przyłączającego klientów
         private Thread listenerTh;
 
+        //obiekt ustawień aplikacji
+        private Properties.Settings settings = Properties.Settings.Default;
+
+        /*
+         * Dane logowania do bazy danych wczytane z pliku konfiguracyjnego Settings.settings
+         * 1. Login
+         * 2. Hasło
+         * 3. Baza danych
+         * 4. Host
+         */
+        private string mysqlLogin;
+        private string mysqlPass;
+        private string mysqlBase;
+        private string mysqlHost;
+
         //delegat funkcji przyjmującej jako argument stringa
         private delegate void SetString(string str);
 
@@ -39,7 +54,20 @@ namespace GameServer
             isRunning = false;
 
             //utworzenie gniazda serwera
-            server = new TcpListener(IPAddress.Any, 8001);
+            try
+            {
+                server = new TcpListener(IPAddress.Any, 8001);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Nie udało się utworzyć gniazda serwera. Dalsze korzystanie z aplikacji może generować błędy! Uruchom aplikację jeszcze raz.\nDebuger message:\n" + ex.ToString(), "Błąd tworzenia gniazda serwera!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+
+            //wczytanie ustawien konfiguracyjnych
+            mysqlLogin = settings.mysqlLogin;
+            mysqlPass = settings.mysqlPass;
+            mysqlBase = settings.mysqlBase;
+            mysqlHost = settings.mysqlHost;
 
         }
 
@@ -111,7 +139,7 @@ namespace GameServer
         private ulong login(string login, string md5pass)
         {
             //wprowadzenie danych do logowania
-            String conData = conStr("localhost", "root", "", "rpg");
+            String conData = conStr(mysqlHost, mysqlLogin, mysqlPass, mysqlBase);
             //utworzenie obiektu połączenia
             MySqlConnection connection = new MySqlConnection(conData);
             //próba otworzenia połączenia
@@ -248,6 +276,12 @@ namespace GameServer
                 return !(socket.Poll(1, SelectMode.SelectRead) && socket.Available == 0);
             }
             catch (SocketException) { return false; }
+        }
+
+        private void ustawieniaToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            SettingsForm ustawienia = new SettingsForm();
+            ustawienia.ShowDialog();
         }
     }
 }
