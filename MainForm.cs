@@ -169,7 +169,7 @@ namespace GameServer
                             //connectionInfo.AppendText("\n");
                             //utworzenie nowego wątku, uruchamiającego nową aplikację
                             //new Interface(reader.GetInt32(0)).Show();
-                            return reader.GetUInt64(0);
+                            return reader.GetUInt64("id");
                         }
                     }
                     else
@@ -185,6 +185,63 @@ namespace GameServer
             }
             connection.Close();
             return 0;
+        }
+
+        private bool getPlayerData(ulong player_id, ref string[] data)
+        {
+            //wprowadzenie danych do logowania
+            String conData = conStr(mysqlHost, mysqlLogin, mysqlPass, mysqlBase);
+            //utworzenie obiektu połączenia
+            MySqlConnection connection = new MySqlConnection(conData);
+            //próba otworzenia połączenia
+            try
+            {
+                connection.Open();
+            }
+            catch
+            {
+                //MessageBox.Show("Nie można połączyć się z bazą danych! Błąd: \n" + ex.Message.ToString(), "Błąd bazy danych", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return false;
+            }
+            //zdefiniowanie zmiennej polecenia w obrębie obiektu połączenia connection
+            MySqlCommand polecenie = connection.CreateCommand();
+            //utworzenie zapytania
+            polecenie.CommandText = "SELECT * FROM `player` WHERE `player`.`id`='" + player_id + "'";
+            //StringBuilder builder = new StringBuilder();
+            try
+            {
+                using (MySqlDataReader reader = polecenie.ExecuteReader())
+                {
+                    if (reader.HasRows) //jeżeli wybrało wiersze z bazy
+                    {
+                        while (reader.Read())
+                        {
+                            //MessageBox.Show("Identyfikator gracza: " + reader.GetString(0) + " Login: " + reader.GetString(2) + " Pole nr 1: " + reader.GetString(1));
+                            //connectionInfo.AppendText("\n");
+                            //utworzenie nowego wątku, uruchamiającego nową aplikację
+                            //new Interface(reader.GetInt32(0)).Show();
+                            //return reader.GetUInt64(0);
+                            data = new string[reader.FieldCount - 1];
+                            data[0] = reader.GetString("login");
+                            data[1] = reader.GetString("password");
+                            data[2] = reader.GetString("access");
+                            data[3] = reader.GetString("email");
+                            return true;
+                        }
+                    }
+                    else
+                    {
+                        //MessageBox.Show("Podano błędny login lub hasło. Spróbuj jeszcze raz podając poprawne dane lub skorzystaj z opcji przypomnienia hasła.", "Nieudane logowanie", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        return false;
+                    }
+                }
+            }
+            catch
+            {
+                return false;
+            }
+            connection.Close();
+            return false;
         }
 
         private void listen()
@@ -258,6 +315,12 @@ namespace GameServer
                             break;
                         case ClientCmd.GET_PLAYER_DATA:
                             addLogAsynch("[Klient]: Żądanie pobrania danych użytkownia ID = " + args[1]);
+                            string[] dane = new string[3];
+                            while (!getPlayerData(ulong.Parse(args[1]), ref dane))
+                            {
+                                Thread.Sleep(1);
+                            }
+                            socket.Send(code.GetBytes(ServerCmd.PLAYER_DATA + ";" + dane[0] + ";" + dane[1] + ";" + dane[2] + ";" + dane[3]));
                             break;
                         default:
                             addLogAsynch("[!][Klient]: Odebrano nieznaną komendę!");
