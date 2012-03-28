@@ -244,6 +244,7 @@ namespace GameServer
             return false;
         }
 
+        //nasłuchiwanie i dodawanie klientów
         private void listen()
         {
             addLogAsynch("[Serwer]: Serwer rozpoczął nasłuchiwanie");
@@ -262,11 +263,16 @@ namespace GameServer
                 }
                 try
                 {
+                    //sprawdzenie czy ktoś oczekuje na obsłużenie
                     if (server.Pending())
                     {
+                        //utworzenie nowego wątku klienta
                         Thread klientTh = new Thread(service);
                         klientTh.Priority = ThreadPriority.BelowNormal;
+                        
+                        //wątek kończy się wraz z zakończeniem wątku, który go wywołał
                         klientTh.IsBackground = true;
+                        //uruchomienie wątku - jako argument, gniazdo do komunikacji z klientem
                         klientTh.Start(server.AcceptSocket());
                     }
                 }
@@ -275,18 +281,20 @@ namespace GameServer
                     MessageBox.Show(e.ToString(), "Błąd tworzenia wątku klienta!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
             }
-            Thread.Sleep(1);
+            Thread.Sleep(1); //potrzebne aby oszczędzić czasu CPU
             server.Stop();
         }
 
+        //właściwa obsługa klienta
         private void service(object s)
         {
             Socket socket = s as Socket;
             code = new UTF8Encoding();
             string clientName = socket.RemoteEndPoint.ToString();
+            bool successLog = false;
             byte[] buf = new byte[4096];
 
-            addLogAsynch("[Klient]: Klient " + clientName + " połączył się z serwerem.");
+            //addLogAsynch("[Klient]: Klient " + clientName + " połączył się z serwerem.");
 
             while (socket.Connected && isRunning && IsConnected(socket))
             {
@@ -294,41 +302,67 @@ namespace GameServer
                 {
                     //komenda wczytana z bufora
                     string cmd = code.GetString(buf, 0, socket.Receive(buf));
+                    
+                    //utworzenie obiektu komendy
+                    Command response = new Command();
 
                     //zamiana lini komendy na nazwę akcji args[0] i argumenty - reszta tablicy
                     string[] args = cmdToArgs(cmd);
 
                     switch (args[0])
                     {
+                            /*
+                             * LOGOWANIE
+                             */
                         case ClientCmd.LOGIN:
-                            addLogAsynch("[Klient]: Komenda zalogowania.");
                             ulong userID = login(args[1], args[2]);
                             if (userID == 0)
                             {
-                                addLogAsynch("[Klient]: Nie udało się zalogować.");
+                                addLogAsynch("[Klient]: Nieudana próba logowania (login: "+args[1]+")");
                             }
                             else
                             {
-                                addLogAsynch("[Klient]: Udane logowanie. ID = "+userID);
+                                addLogAsynch("[ "+args[1]+" ]: Udane logowanie. ID = "+userID);
+                                clientName = args[1];
+                                successLog = true;
                             }
-                            socket.Send(code.GetBytes(userID.ToString()));
+                            //utworzenie odpowiedzi
+                            response.Request(ClientCmd.LOGIN);
+                            response.Add(userID.ToString());
+                            response.Apply();
+
+                            //wysłanie odpowiedzi
+                            socket.Send(response.Byte);
                             break;
+
+                            /*
+                             * WYSYŁANIE DANYCH GRACZA
+                             */
                         case ClientCmd.GET_PLAYER_DATA:
-                            addLogAsynch("[Klient]: Żądanie pobrania danych użytkownia ID = " + args[1]);
                             string[] dane = new string[3];
                             while (!getPlayerData(ulong.Parse(args[1]), ref dane))
                             {
                                 Thread.Sleep(1);
                             }
-                            socket.Send(code.GetBytes(ServerCmd.PLAYER_DATA + ";" + dane[0] + ";" + dane[1] + ";" + dane[2] + ";" + dane[3]));
+                            //utworzenie odpowiedzi
+                            response.Request(ServerCmd.PLAYER_DATA);
+                            response.Add(dane);
+                            response.Apply();
+
+                            socket.Send(response.Byte);
+                            addLogAsynch("[ "+dane[0]+" ]: Pobrał dane gracza.");
                             break;
                         default:
                             addLogAsynch("[!][Klient]: Odebrano nieznaną komendę!");
                             break;
                     }
+                    response.Clear();
                 }
             }
-            addLogAsynch("[Klient]: Klient " + clientName + " rozłączył się z serwerem.");
+            if (successLog)
+            {
+                addLogAsynch("[ " + clientName + " ]: Gracz rozłączył się z serwerem.");
+            }
         }
 
         //sprawdzenie czy na gnieździe nasłuchuje jeszcze klient
