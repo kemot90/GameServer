@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Net;
+using System.Net.Sockets;
 
 namespace Commands
 {
@@ -8,11 +10,12 @@ namespace Commands
     {
         public const string LOGIN = "LOGIN";
         public const string GET_PLAYER_DATA = "GET_PLAYER_DATA";
-        public const string UPDATE_FIELD = "UPDATE_FIELD";
+        public const string UPDATE_DATA_BASE = "UPDATE_DATA_BASE";
     }
     public class ServerCmd
     {
         public const string PLAYER_DATA = "PLAYER_DATA";
+        public const string DATA_BASE_UPDATED = "DATA_BASE_UPDATED";
     }
     public class Command
     {
@@ -102,6 +105,7 @@ namespace Commands
                 args.Insert(0, req);
             }
         }
+
         //zatwierdzanie argumentów
         public bool Apply()
         {
@@ -116,6 +120,33 @@ namespace Commands
                 cmd = code.GetBytes(cmdString);
 
                 return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        //zatwierdzanie argumentów i wysłanie przez gniazdo podane jako arguement
+        public bool Apply(Socket client)
+        {
+            if (isRequest)
+            {
+                foreach (string arg in args)
+                {
+                    cmdString += ";" + arg;
+                }
+                cmdString = cmdString.Remove(0, 1);
+
+                cmd = code.GetBytes(cmdString);
+                try
+                {
+                    client.Send(cmd);
+                    return true;
+                }
+                catch
+                {
+                    return false;
+                }
             }
             else
             {

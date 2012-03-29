@@ -12,9 +12,11 @@ namespace GameServer
     public partial class SettingsForm : Form
     {
         private Properties.Settings settings = Properties.Settings.Default;
-        public SettingsForm()
+        private MainForm SvrMainForm;
+        public SettingsForm(MainForm ServerMainForm)
         {
             InitializeComponent();
+            SvrMainForm = ServerMainForm;
             mysqlLogin.Text = settings.mysqlLogin;
             mysqlPass.Text = settings.mysqlPass;
             mysqlBase.Text = settings.mysqlBase;
@@ -28,6 +30,10 @@ namespace GameServer
             settings.mysqlBase = mysqlBase.Text;
             settings.mysqlHost = mysqlHost.Text;
             settings.Save();
+            SvrMainForm.MySqlLogin = settings.mysqlLogin;
+            SvrMainForm.MySqlPassword = settings.mysqlPass;
+            SvrMainForm.MySqlBase = settings.mysqlBase;
+            SvrMainForm.MySqlHost = settings.mysqlHost;
             this.Close();
         }
     }
