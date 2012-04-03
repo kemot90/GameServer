@@ -70,5 +70,17 @@ namespace GameServer.Properties {
                 this["mysqlPass"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string mysqlPort {
+            get {
+                return ((string)(this["mysqlPort"]));
+            }
+            set {
+                this["mysqlPort"] = value;
+            }
+        }
     }
 }

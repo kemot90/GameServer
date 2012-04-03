@@ -33,8 +33,8 @@
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.serwerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.logiToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ustawieniaToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.logiToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.groupBox1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -57,6 +57,7 @@
             this.logs.Location = new System.Drawing.Point(6, 19);
             this.logs.Multiline = true;
             this.logs.Name = "logs";
+            this.logs.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.logs.Size = new System.Drawing.Size(532, 220);
             this.logs.TabIndex = 1;
             this.logs.WordWrap = false;
@@ -93,18 +94,18 @@
             this.serwerToolStripMenuItem.Size = new System.Drawing.Size(54, 20);
             this.serwerToolStripMenuItem.Text = "Serwer";
             // 
+            // ustawieniaToolStripMenuItem
+            // 
+            this.ustawieniaToolStripMenuItem.Name = "ustawieniaToolStripMenuItem";
+            this.ustawieniaToolStripMenuItem.Size = new System.Drawing.Size(131, 22);
+            this.ustawieniaToolStripMenuItem.Text = "Ustawienia";
+            this.ustawieniaToolStripMenuItem.Click += new System.EventHandler(this.ustawieniaToolStripMenuItem_Click);
+            // 
             // logiToolStripMenuItem
             // 
             this.logiToolStripMenuItem.Name = "logiToolStripMenuItem";
             this.logiToolStripMenuItem.Size = new System.Drawing.Size(42, 20);
             this.logiToolStripMenuItem.Text = "Logi";
-            // 
-            // ustawieniaToolStripMenuItem
-            // 
-            this.ustawieniaToolStripMenuItem.Name = "ustawieniaToolStripMenuItem";
-            this.ustawieniaToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-            this.ustawieniaToolStripMenuItem.Text = "Ustawienia";
-            this.ustawieniaToolStripMenuItem.Click += new System.EventHandler(this.ustawieniaToolStripMenuItem_Click);
             // 
             // MainForm
             // 

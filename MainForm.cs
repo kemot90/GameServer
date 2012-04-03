@@ -44,6 +44,9 @@ namespace GameServer
         private string mysqlPass;
         private string mysqlBase;
         private string mysqlHost;
+        private string mysqlPort;
+
+        private string connectionString;
 
         //delegat funkcji przyjmującej jako argument stringa
         private delegate void SetString(string str);
@@ -80,6 +83,20 @@ namespace GameServer
                 mysqlHost = value;
             }
         }
+        public string MySqlPort
+        {
+            set
+            {
+                mysqlPort = value;
+            }
+        }
+        public string ConnectionString
+        {
+            set
+            {
+                connectionString = value;
+            }
+        }
 
         public MainForm()
         {
@@ -104,6 +121,16 @@ namespace GameServer
             mysqlPass = settings.mysqlPass;
             mysqlBase = settings.mysqlBase;
             mysqlHost = settings.mysqlHost;
+            mysqlPort = settings.mysqlPort;
+
+            if (mysqlPort != "")
+            {
+                connectionString = conStr(mysqlHost, mysqlLogin, mysqlPass, mysqlBase, mysqlPort);
+            }
+            else
+            {
+                connectionString = conStr(mysqlHost, mysqlLogin, mysqlPass, mysqlBase);
+            }
 
         }
 
@@ -127,6 +154,12 @@ namespace GameServer
         public string conStr(string host, string user, string password, string dataBase)
         {
             string connectionString = "server=" + host + ";user id=" + user + "; pwd=" + password + ";database=" + dataBase + ";";
+            return connectionString;
+        }
+        //funkcja tworząca connection string
+        public string conStr(string host, string user, string password, string dataBase, string port)
+        {
+            string connectionString = "server=" + host + ";port=" + port + ";user id=" + user + "; pwd=" + password + ";database=" + dataBase + ";";
             return connectionString;
         }
 
@@ -174,10 +207,8 @@ namespace GameServer
         //w przeciwnym wypadku zwraca 0
         private ulong login(string login, string md5pass)
         {
-            //wprowadzenie danych do logowania
-            String conData = conStr(mysqlHost, mysqlLogin, mysqlPass, mysqlBase);
             //utworzenie obiektu połączenia
-            MySqlConnection connection = new MySqlConnection(conData);
+            MySqlConnection connection = new MySqlConnection(connectionString);
             //próba otworzenia połączenia
             try
             {
@@ -225,10 +256,8 @@ namespace GameServer
 
         private bool getPlayerData(ulong player_id, ref string[] data)
         {
-            //wprowadzenie danych do logowania
-            String conData = conStr(mysqlHost, mysqlLogin, mysqlPass, mysqlBase);
             //utworzenie obiektu połączenia
-            MySqlConnection connection = new MySqlConnection(conData);
+            MySqlConnection connection = new MySqlConnection(connectionString);
             //próba otworzenia połączenia
             try
             {
@@ -344,10 +373,8 @@ namespace GameServer
 
         private void ExecuteQuery(object query)
         {
-            //wprowadzenie danych do logowania
-            String conData = conStr(mysqlHost, mysqlLogin, mysqlPass, mysqlBase);
             //utworzenie obiektu połączenia
-            MySqlConnection connection = new MySqlConnection(conData);
+            MySqlConnection connection = new MySqlConnection(connectionString);
             //próba otworzenia połączenia
             try
             {
@@ -375,9 +402,11 @@ namespace GameServer
             {
                 Socket socket = s as Socket;
                 code = new UTF8Encoding();
+                ASCIIEncoding codeSize = new ASCIIEncoding();
                 string clientName = socket.RemoteEndPoint.ToString();
                 bool successLog = false;
-                byte[] buf = new byte[4096];
+                byte[] buf;
+                int packageSize = 0;
 
                 //addLogAsynch("[Klient]: Klient " + clientName + " połączył się z serwerem.");
 
@@ -385,90 +414,88 @@ namespace GameServer
                 {
                     if (socket.Available > 0)
                     {
-                        //komenda wczytana z bufora
-                        string cmd = code.GetString(buf, 0, socket.Receive(buf));
-
-                        //utworzenie obiektu komendy
-                        Command response = new Command();
-
-                        //zamiana lini komendy na nazwę akcji args[0] i argumenty - reszta tablicy
-                        string[] args = cmdToArgs(cmd);
-
-                        switch (args[0])
+                        if (packageSize == 0)
                         {
-                            /*
-                             * LOGOWANIE
-                             */
-                            case ClientCmd.LOGIN:
-                                ulong userID = login(args[1], args[2]);
-                                if (userID == 0)
-                                {
-                                    addLogAsynch("[Klient]: Nieudana próba logowania (login: " + args[1] + ")");
-                                }
-                                else
-                                {
-                                    addLogAsynch("[ " + args[1] + " ]: Udane logowanie. ID = " + userID);
-                                    clientName = args[1];
-                                    successLog = true;
-                                }
-                                //utworzenie odpowiedzi
-                                response.Request(ClientCmd.LOGIN);
-                                response.Add(userID.ToString());
-                                response.Apply(socket);
-
-                                //wysłanie odpowiedzi
-                                //socket.Send(response.Byte);
-                                break;
-
-                            /*
-                             * WYSYŁANIE DANYCH GRACZA
-                             * kolejność danych: komenda, login, hasło, dostęp, email
-                             */
-                            case ClientCmd.GET_PLAYER_DATA:
-                                string[] dane = new string[3];
-                                while (!getPlayerData(ulong.Parse(args[1]), ref dane))
-                                {
-                                    Thread.Sleep(1);
-                                }
-                                //utworzenie odpowiedzi
-                                response.Request(ServerCmd.PLAYER_DATA);
-                                response.Add(dane);
-                                response.Apply();
-
-                                socket.Send(response.Byte);
-                                addLogAsynch("[ " + dane[0] + " ]: Pobrał dane gracza.");
-                                break;
-
-                            /*
-                             * UAKTUALNIANIE PÓL BAZY DANYCH
-                             * kolejność danych: komenda, identyfikator, tabela, pola, wartości
-                             */
-                            case ClientCmd.UPDATE_DATA_BASE:
-                                string UpdateQuery = CreateMySqlUpdateQuery(args);
-                                ExecuteQuery(UpdateQuery);
-                                //utworzenie odpowiedzi
-                                response.Request(ServerCmd.DATA_BASE_UPDATED);
-                                response.Apply(socket);
-                                break;
-
-                            /*case ClientCmd.GET_DUPA:
-                                string connectionString = conStr(mysqlHost, mysqlLogin, mysqlPass, mysqlBase);
-                                MySqlConnection connection = new MySqlConnection(connectionString);
-                                connection.Open();
-
-                                MySqlCommand query = connection.CreateCommand();
-                                query.CommandText = "SELECT wartosc FROM `dupy` WHERE `id` = '" + args[1] + "'";
-                                MySqlDataReader reader = query.ExecuteReader();
-                                while (reader.Read())
-                                {
-                                    addLogAsynch("Wartość dupy: " + reader.GetString("wartosc"));
-                                }
-                                break;*/
-                            default:
-                                addLogAsynch("[!][Klient]: Odebrano nieznaną komendę!");
-                                break;
+                            buf = new byte[4];
+                            socket.Receive(buf);
+                            packageSize = BitConverter.ToInt32(buf, 0);
                         }
-                        response.Clear();
+                        else
+                        {
+                            buf = new byte[packageSize];
+                            //komenda wczytana z bufora
+                            string cmd = code.GetString(buf, 0, socket.Receive(buf));
+                            packageSize = 0;
+
+                            //utworzenie obiektu komendy
+                            Command response = new Command();
+
+                            //zamiana lini komendy na nazwę akcji args[0] i argumenty - reszta tablicy
+                            string[] args = cmdToArgs(cmd);
+
+                            switch (args[0])
+                            {
+                                /*
+                                 * LOGOWANIE
+                                 */
+                                case ClientCmd.LOGIN:
+                                    ulong userID = login(args[1], args[2]);
+                                    if (userID == 0)
+                                    {
+                                        addLogAsynch("[Klient]: Nieudana próba logowania (login: " + args[1] + ")");
+                                    }
+                                    else
+                                    {
+                                        addLogAsynch("[ " + args[1] + " ]: Udane logowanie. ID = " + userID);
+                                        clientName = args[1];
+                                        successLog = true;
+                                    }
+                                    //utworzenie odpowiedzi
+                                    response.Request(ClientCmd.LOGIN);
+                                    response.Add(userID.ToString());
+                                    response.Apply(socket);
+
+                                    //wysłanie odpowiedzi
+                                    //socket.Send(response.Byte);
+                                    break;
+
+                                /*
+                                 * WYSYŁANIE DANYCH GRACZA
+                                 * kolejność danych: komenda, login, hasło, dostęp, email
+                                 */
+                                case ClientCmd.GET_PLAYER_DATA:
+                                    string[] dane = new string[3];
+                                    while (!getPlayerData(ulong.Parse(args[1]), ref dane))
+                                    {
+                                        Thread.Sleep(1);
+                                    }
+                                    //utworzenie odpowiedzi
+                                    response.Request(ServerCmd.PLAYER_DATA);
+                                    response.Add(dane);
+                                    response.Apply(socket);
+
+                                    socket.Send(response.Byte);
+                                    addLogAsynch("[ " + dane[0] + " ]: Pobrał dane gracza.");
+                                    break;
+
+                                /*
+                                 * UAKTUALNIANIE PÓL BAZY DANYCH
+                                 * kolejność danych: komenda, identyfikator, tabela, pola, wartości
+                                 */
+                                case ClientCmd.UPDATE_DATA_BASE:
+                                    string UpdateQuery = CreateMySqlUpdateQuery(args);
+                                    ExecuteQuery(UpdateQuery);
+                                    //utworzenie odpowiedzi
+                                    response.Request(ServerCmd.DATA_BASE_UPDATED);
+                                    response.Apply(socket);
+                                    break;
+
+                                default:
+                                    addLogAsynch("[!][Klient]: Odebrano nieznaną komendę!");
+                                    break;
+                            }
+                            response.Clear();
+                        }
                     }
                 }
                 if (successLog)

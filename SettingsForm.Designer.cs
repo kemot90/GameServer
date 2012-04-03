@@ -30,6 +30,7 @@
         {
             this.svrSettings = new System.Windows.Forms.TabControl();
             this.mysqlSettings = new System.Windows.Forms.TabPage();
+            this.testConnection = new System.Windows.Forms.Button();
             this.button1 = new System.Windows.Forms.Button();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.label4 = new System.Windows.Forms.Label();
@@ -42,6 +43,7 @@
             this.mysqlLogin = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.mysqlPort = new System.Windows.Forms.TextBox();
             this.svrSettings.SuspendLayout();
             this.mysqlSettings.SuspendLayout();
             this.groupBox2.SuspendLayout();
@@ -55,41 +57,53 @@
             this.svrSettings.Location = new System.Drawing.Point(12, 12);
             this.svrSettings.Name = "svrSettings";
             this.svrSettings.SelectedIndex = 0;
-            this.svrSettings.Size = new System.Drawing.Size(260, 237);
+            this.svrSettings.Size = new System.Drawing.Size(342, 237);
             this.svrSettings.TabIndex = 0;
             // 
             // mysqlSettings
             // 
+            this.mysqlSettings.Controls.Add(this.testConnection);
             this.mysqlSettings.Controls.Add(this.button1);
             this.mysqlSettings.Controls.Add(this.groupBox2);
             this.mysqlSettings.Controls.Add(this.groupBox1);
             this.mysqlSettings.Location = new System.Drawing.Point(4, 22);
             this.mysqlSettings.Name = "mysqlSettings";
             this.mysqlSettings.Padding = new System.Windows.Forms.Padding(3);
-            this.mysqlSettings.Size = new System.Drawing.Size(252, 211);
+            this.mysqlSettings.Size = new System.Drawing.Size(334, 211);
             this.mysqlSettings.TabIndex = 0;
             this.mysqlSettings.Text = "MySql";
             this.mysqlSettings.UseVisualStyleBackColor = true;
+            // 
+            // testConnection
+            // 
+            this.testConnection.Location = new System.Drawing.Point(86, 174);
+            this.testConnection.Name = "testConnection";
+            this.testConnection.Size = new System.Drawing.Size(103, 23);
+            this.testConnection.TabIndex = 11;
+            this.testConnection.Text = "Testuj połączenie";
+            this.testConnection.UseVisualStyleBackColor = true;
+            this.testConnection.Click += new System.EventHandler(this.testConnection_Click);
             // 
             // button1
             // 
             this.button1.Location = new System.Drawing.Point(6, 174);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(176, 23);
-            this.button1.TabIndex = 2;
-            this.button1.Text = "Zapisz ustawienia bazy danych";
+            this.button1.Size = new System.Drawing.Size(74, 23);
+            this.button1.TabIndex = 10;
+            this.button1.Text = "Zapisz";
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
             // groupBox2
             // 
+            this.groupBox2.Controls.Add(this.mysqlPort);
             this.groupBox2.Controls.Add(this.label4);
             this.groupBox2.Controls.Add(this.mysqlBase);
             this.groupBox2.Controls.Add(this.mysqlHost);
             this.groupBox2.Controls.Add(this.label3);
             this.groupBox2.Location = new System.Drawing.Point(6, 9);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(240, 77);
+            this.groupBox2.Size = new System.Drawing.Size(322, 77);
             this.groupBox2.TabIndex = 1;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Host i baza danych";
@@ -183,11 +197,18 @@
             this.tabPage2.Text = "Logi";
             this.tabPage2.UseVisualStyleBackColor = true;
             // 
+            // mysqlPort
+            // 
+            this.mysqlPort.Location = new System.Drawing.Point(240, 19);
+            this.mysqlPort.Name = "mysqlPort";
+            this.mysqlPort.Size = new System.Drawing.Size(76, 20);
+            this.mysqlPort.TabIndex = 5;
+            // 
             // SettingsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(284, 259);
+            this.ClientSize = new System.Drawing.Size(366, 259);
             this.Controls.Add(this.svrSettings);
             this.Name = "SettingsForm";
             this.Text = "Ustawienia";
@@ -217,5 +238,7 @@
         private System.Windows.Forms.TextBox mysqlHost;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button testConnection;
+        private System.Windows.Forms.TextBox mysqlPort;
     }
 }
