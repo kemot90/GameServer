@@ -50,7 +50,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Character.cs" />
+    <Compile Include="CharacterEquipment.cs" />
     <Compile Include="Commands.cs" />
+    <Compile Include="Creature.cs" />
+    <Compile Include="GlobalMySql.cs" />
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -84,6 +88,7 @@
     <None Include="app.config">
       <SubType>Designer</SubType>
     </None>
+    <None Include="RPGameServerClass.cd" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
