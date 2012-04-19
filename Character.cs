@@ -7,6 +7,12 @@ using MySql.Data.MySqlClient;
 
 namespace GameServer
 {
+    public class CharacterStatus
+    {
+        public const string IN_STANDBY = "IN_STANDBY";
+        public const string IS_TRAVELING = "IS_TRAVELING";
+        public const string IS_DEAD = "IS_DEAD";
+    }
     public class Character : Creature
     {
         private ulong exp;
@@ -14,16 +20,24 @@ namespace GameServer
         private ulong lastHPChange;
         private ulong damage;
         private ulong travelEndTime;
+        private string status;
+
+        //obiekt bieżącego wyposażenia
+        private CharacterEquipment equipment;
+
         private GlobalMySql dataBase;
 
         public Character(ulong playerId, GlobalMySql GlobalMySqlObject)
         {
             //kosntruktor postaci
 
+            //przypisanie identyfikatora gracza do indetyfikatora postaci
             this.Id = playerId;
 
             //przypisanie obiektu zawierającego ustawienia i połączenie z bazą do obiektu postaci 
             dataBase = GlobalMySqlObject;
+
+            equipment = new CharacterEquipment(playerId, GlobalMySqlObject);
 
             if (dataBase.Connection.State != ConnectionState.Open)
             {
@@ -270,6 +284,26 @@ namespace GameServer
             }
             set
             {
+            }
+        }
+
+        public CharacterEquipment Equipment
+        {
+            get
+            {
+                return equipment;
+            }
+        }
+
+        public string Status
+        {
+            get
+            {
+                return status;
+            }
+            set
+            {
+                status = value;
             }
         }
 
