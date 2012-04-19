@@ -1,14 +1,16 @@
 ﻿using System;
+using System.Data;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using MySql.Data.MySqlClient;
 
 namespace GameServer
 {
     public class CharacterEquipment
     {
         public enum Part { Head, Shoulders, Chest, Hands, Thighs, Legs, Weapon, Shield };
-        private ulong characterId;
+        private ulong id;
         private uint head;
         private uint shoulders;
         private uint chest;
@@ -18,14 +20,63 @@ namespace GameServer
         private uint weapon;
         private uint shield;
 
+        private GlobalMySql dataBase;
+
+        public CharacterEquipment(ulong characterId, GlobalMySql GlobalMySqlObject)
+        {
+            //przypisanie identyfikatora postaci
+            id = characterId;
+
+            //przypisanie obiektu zawierającego ustawienia i połączenie z bazą do obiektu postaci
+            dataBase = GlobalMySqlObject;
+
+            if (dataBase.Connection.State != ConnectionState.Open)
+            {
+                try
+                {
+                    dataBase.Connection.Open();
+                }
+                catch
+                {
+                    //
+                }
+            }
+
+            MySqlCommand query = dataBase.Connection.CreateCommand();
+            query.CommandText = "SELECT * FROM `character_equipment` WHERE `character_equipment`.`id` = " + id;
+
+            try
+            {
+                using (MySqlDataReader reader = query.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        head = reader.GetUInt32("head");
+                        shoulders = reader.GetUInt32("shoulders");
+                        chest = reader.GetUInt32("chest");
+                        hands = reader.GetUInt32("hands");
+                        thighs = reader.GetUInt32("thighs");
+                        legs = reader.GetUInt32("legs");
+                        weapon = reader.GetUInt32("weapon");
+                        shield = reader.GetUInt32("shield");
+                    }
+                }
+            }
+            catch
+            {
+                //
+            }
+        }
+
         public uint Head
         {
             get
             {
-                throw new System.NotImplementedException();
+                return head;
             }
             set
             {
+                head = value;
             }
         }
 
@@ -33,10 +84,11 @@ namespace GameServer
         {
             get
             {
-                throw new System.NotImplementedException();
+                return shoulders;
             }
             set
             {
+                shoulders = value;
             }
         }
 
@@ -44,10 +96,11 @@ namespace GameServer
         {
             get
             {
-                throw new System.NotImplementedException();
+                return chest;
             }
             set
             {
+                chest = value;
             }
         }
 
@@ -55,10 +108,11 @@ namespace GameServer
         {
             get
             {
-                throw new System.NotImplementedException();
+                return hands;
             }
             set
             {
+                hands = value;
             }
         }
 
@@ -66,10 +120,11 @@ namespace GameServer
         {
             get
             {
-                throw new System.NotImplementedException();
+                return thighs;
             }
             set
             {
+                thighs = value;
             }
         }
 
@@ -77,10 +132,11 @@ namespace GameServer
         {
             get
             {
-                throw new System.NotImplementedException();
+                return legs;
             }
             set
             {
+                legs = value;
             }
         }
 
@@ -88,10 +144,11 @@ namespace GameServer
         {
             get
             {
-                throw new System.NotImplementedException();
+                return weapon;
             }
             set
             {
+                weapon = value;
             }
         }
 
@@ -99,10 +156,11 @@ namespace GameServer
         {
             get
             {
-                throw new System.NotImplementedException();
+                return shield;
             }
             set
             {
+                shield = value;
             }
         }
 

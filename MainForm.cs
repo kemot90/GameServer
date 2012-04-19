@@ -38,13 +38,14 @@ namespace GameServer
         private delegate void SetString(string str);
 
         //obiekt przechowujący obiekty ubiegające się o dostęp do wątku
-        private Object Sync;
+        //private Object Sync;
 
         public MainForm()
         {
             InitializeComponent();
 
-            Sync = new Object();
+            //Sync = new Object();
+
             //domyślnie serwer jest wyłączony
             isRunning = false;
 
@@ -121,17 +122,6 @@ namespace GameServer
         //w przeciwnym wypadku zwraca 0
         private ulong Login(string login, string md5pass)
         {
-            //próba otworzenia połączenia
-            try
-            {
-                if (dataBase.Connection.State != ConnectionState.Open)
-                    dataBase.Connection.Open();
-            }
-            catch
-            {
-                //MessageBox.Show("Nie można połączyć się z bazą danych! Błąd: \n" + ex.Message.ToString(), "Błąd bazy danych", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return 0;
-            }
             //zdefiniowanie zmiennej polecenia w obrębie obiektu połączenia connection
             MySqlCommand polecenie = dataBase.Connection.CreateCommand();
             //utworzenie zapytania
@@ -163,7 +153,6 @@ namespace GameServer
             {
                 return 0;
             }
-            dataBase.Connection.Close();
             return 0;
         }
 
@@ -171,19 +160,7 @@ namespace GameServer
         private string[] GetPlayerData(ulong player_id)
         {
             string[] data;
-            //jeżeli połącznie ma status różny od otwartego
-            if (dataBase.Connection.State != ConnectionState.Open)
-            {
-                //to spróbuj je otworzyć
-                try
-                {
-                    dataBase.Connection.Open();
-                }
-                catch
-                {
-                    return null;
-                }
-            }
+
             //zdefiniowanie zmiennej polecenia w obrębie obiektu połączenia connection
             MySqlCommand polecenie = dataBase.Connection.CreateCommand();
             //utworzenie zapytania
