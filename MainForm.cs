@@ -99,7 +99,7 @@ namespace GameServer
                 //wstrzymanie wątku głównego do czasu zakończenia listenerTh i włączenie go do głównego
                 listenerTh.Join();
 
-                AddLog("[" + GetSrverDateTime() + "][Serwer]: Serwer zakończył nasłuchiwanie");
+                AddLog("[" + GetServerDateTime() + "][Serwer]: Serwer zakończył nasłuchiwanie");
             }
             else //jeżeli serwer nie jest w trakcie działania
             {
@@ -210,14 +210,15 @@ namespace GameServer
             response.Add(dane);
             response.Apply(socket);
 
-            AddLogAsynch("[" + GetSrverDateTime() + "][ " + dane[0] + " ]: Pobrał dane gracza.");
+            AddLogAsynch("[" + GetServerDateTime() + "][ " + dane[0] + " ]: Pobrał dane gracza.");
             return true;
         }
 
         //nasłuchiwanie i dodawanie klientów
         private void Listen()
         {
-            AddLogAsynch("[" + GetSrverDateTime() + "][Serwer]: Serwer rozpoczął nasłuchiwanie");
+            AddLogAsynch("[" + GetServerDateTime() + "][Serwer]: Serwer rozpoczął nasłuchiwanie");
+            AddLogAsynch("Now time seconds: " + GetTimeStamp());
             //dopóki zmienna sterująca stanem działania serwera jest ustawiona na true
             //dopóki serwer nasłuchuje
             while (isRunning)
@@ -368,11 +369,11 @@ namespace GameServer
                                 ulong userID = Login(args[1], args[2]);
                                 if (userID == 0)
                                 {
-                                    AddLogAsynch("[" + GetSrverDateTime() + "][Klient]: Nieudana próba logowania (Login: " + args[1] + ")");
+                                    AddLogAsynch("[" + GetServerDateTime() + "][Klient]: Nieudana próba logowania (Login: " + args[1] + ")");
                                 }
                                 else
                                 {
-                                    AddLogAsynch("[" + GetSrverDateTime() + "][ " + args[1] + " ]: Udane logowanie. ID = " + userID);
+                                    AddLogAsynch("[" + GetServerDateTime() + "][ " + args[1] + " ]: Udane logowanie. ID = " + userID);
                                     clientName = args[1];
                                     successLog = true;
 
@@ -380,7 +381,7 @@ namespace GameServer
                                     character = new Character(userID, dataBase);
 
                                     //uaktualnienie w bazie danych daty ostatniego logowania
-                                    ExecuteQuery("UPDATE `" + dataBase.MySqlBase + "`.`player` SET `lastlogin` = '" + GetSrverDateTime() + "' WHERE `player`.`id` =" + userID + ";");
+                                    ExecuteQuery("UPDATE `" + dataBase.MySqlBase + "`.`player` SET `lastlogin` = '" + GetServerDateTime() + "' WHERE `player`.`id` =" + userID + ";");
                                 }
                                 //utworzenie odpowiedzi
                                 response.Request(ClientCmd.LOGIN);
@@ -411,7 +412,7 @@ namespace GameServer
                                 response.Apply(socket);
                                 break;
                             default:
-                                AddLogAsynch("[" + GetSrverDateTime() + "][Klient]: Odebrano nieznaną komendę!");
+                                AddLogAsynch("[" + GetServerDateTime() + "][Klient]: Odebrano nieznaną komendę!");
                                 break;
                         }
                         response.Clear();
@@ -420,7 +421,7 @@ namespace GameServer
             }
             if (successLog)
             {
-                AddLogAsynch("[" + GetSrverDateTime() + "][ " + clientName + " ]: Gracz rozłączył się z serwerem.");
+                AddLogAsynch("[" + GetServerDateTime() + "][ " + clientName + " ]: Gracz rozłączył się z serwerem.");
             }
         }
 
@@ -441,7 +442,7 @@ namespace GameServer
         }
 
         //pobranie czasu serwera w formacie akceptowanym przez bazę danych MySql
-        private string GetSrverDateTime()
+        private string GetServerDateTime()
         {
             //utworzenie obiektu DateTime dla ustalenia czasu serwera
             //zostanie on ustawiony jako czas ostatniego logowania
@@ -449,6 +450,15 @@ namespace GameServer
             DateTime date = DateTime.Now;
 
             return String.Format("{0: yyyy'-'MM'-'dd HH:mm:ss}", date);
+        }
+
+        //pobieranie czasu serwera w formacie UNIXowym w sekundach od początku ery UNIXa
+        private string GetTimeStamp()
+        {
+            //Find unix timestamp (seconds since 01/01/1970)
+            long ticks = DateTime.UtcNow.Ticks - DateTime.Parse("01/01/1970 00:00:00").Ticks;
+            ticks /= 10000000; //Convert windows ticks to seconds
+            return ticks.ToString();
         }
     }
 }
