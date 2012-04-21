@@ -80,7 +80,16 @@ namespace GameServer
 
             //inicjalizacja pola połączenia
             connection = new MySqlConnection(connectionString);
-            connection.Open();
+        }
+        public GlobalMySql(string login, string password, string database, string host)
+        {
+            //inicjalizacja pola połączenia
+            connection = new MySqlConnection(CreateConnectionString(host, login, password, database));
+        }
+        public GlobalMySql(string login, string password, string database, string host, string port)
+        {
+            //inicjalizacja pola połączenia
+            connection = new MySqlConnection(CreateConnectionString(host, login, password, database, port));
         }
 
         ~GlobalMySql()

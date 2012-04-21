@@ -44,7 +44,15 @@ namespace GameServer
 
         private void testConnection_Click(object sender, EventArgs e)
         {
-            GlobalMySql testConnection = new GlobalMySql();
+            GlobalMySql testConnection;
+            if (mysqlPort.Text == "")
+            {
+                testConnection = new GlobalMySql(mysqlLogin.Text, mysqlPass.Text, mysqlBase.Text, mysqlHost.Text);
+            }
+            else
+            {
+                testConnection = new GlobalMySql(mysqlLogin.Text, mysqlPass.Text, mysqlBase.Text, mysqlHost.Text, mysqlPort.Text);
+            }
             
             //próba otworzenia połączenia
             try

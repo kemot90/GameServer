@@ -60,6 +60,15 @@ namespace GameServer
             }
 
             dataBase = new GlobalMySql();
+
+            try
+            {
+                dataBase.Connection.Open();
+            }
+            catch
+            {
+                AddLog("Nie udało się nawiązać połączenia z bazą danych. Aplikacja nie będzie działać poprawanie.");
+            }
         }
 
         //dodanie tekstu do okna logów synchronicznie
@@ -324,7 +333,7 @@ namespace GameServer
             /* -------------- INICJALIZACJA OBIEKTÓW DLA GRACZA -------------- */
 
             //obiekt postaci
-            Character character;
+            Character character = null;
 
             /* --------------------------------------------------------------- */
             
@@ -400,6 +409,29 @@ namespace GameServer
                                 sendPlayerDataTh.Start();
                                 break;
 
+                            /* 
+                             * WYSŁANIE DANYCH POSTACI
+                             * kolejność danych: komenda, imie, poziom, doświadczenie, złoto, siła, wytrzymałość, zręczność, szczęście
+                             */
+                            case ClientCmd.GET_CHARACTER_DATA:
+                                response.Request(ServerCmd.CHARACTER_DATA);
+                                response.Add(character.Name);
+                                response.Add(character.Level.ToString());
+                                response.Add(character.Experience.ToString());
+                                response.Add(character.Gold.ToString());
+                                response.Add(character.Strength.ToString());
+                                response.Add(character.Stamina.ToString());
+                                response.Add(character.Dexterity.ToString());
+                                response.Add(character.Luck.ToString());
+                                response.Add(character.Status);
+                                response.Add(character.LastDamage.ToString());
+                                response.Add(character.Damage.ToString());
+                                response.Add(character.Location.ToString());
+                                response.Add(character.TravelEndTime.ToString());
+
+                                response.Apply(socket);
+
+                                break;
                             /*
                              * UAKTUALNIANIE PÓL BAZY DANYCH
                              * kolejność danych: komenda, identyfikator, tabela, pola, wartości

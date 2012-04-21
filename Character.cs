@@ -17,7 +17,7 @@ namespace GameServer
     {
         private ulong exp;
         private ulong gold;
-        private ulong lastHPChange;
+        private ulong lastDamage;
         private ulong damage;
         private ulong travelEndTime;
         private string status;
@@ -52,6 +52,8 @@ namespace GameServer
             }
 
             MySqlCommand query = dataBase.Connection.CreateCommand();
+
+            //zapytanie pobierające podstawowe dane postaci
             query.CommandText = "SELECT * FROM `character` WHERE `character`.`id` = " + Id;
 
             try
@@ -69,6 +71,27 @@ namespace GameServer
 
                         exp = reader.GetUInt32("exp");
                         gold = reader.GetUInt32("gold");
+                    }
+                }
+            }
+            catch
+            {
+                //
+            }
+
+            query.CommandText = "SELECT * FROM `character_status` WHERE `character_status`.`id` = " + Id;
+
+            try
+            {
+                using (MySqlDataReader reader = query.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        status = reader.GetString("status");
+                        lastDamage = reader.GetUInt64("lastDamage");
+                        damage = reader.GetUInt64("damage");
+                        location = reader.GetUInt32("location");
+                        travelEndTime = reader.GetUInt64("travelEndTime");
                     }
                 }
             }
@@ -112,18 +135,6 @@ namespace GameServer
             set
             {
                 level = value;
-            }
-        }
-
-        public uint Location
-        {
-            get
-            {
-                return location;
-            }
-            set
-            {
-                location = value;
             }
         }
 
@@ -210,40 +221,7 @@ namespace GameServer
             }
         }
 
-        public int Shoulders
-        {
-            get
-            {
-                throw new System.NotImplementedException();
-            }
-            set
-            {
-            }
-        }
-
         public int Chest
-        {
-            get
-            {
-                throw new System.NotImplementedException();
-            }
-            set
-            {
-            }
-        }
-
-        public int Hands
-        {
-            get
-            {
-                throw new System.NotImplementedException();
-            }
-            set
-            {
-            }
-        }
-
-        public int Thighs
         {
             get
             {
@@ -304,6 +282,54 @@ namespace GameServer
             set
             {
                 status = value;
+            }
+        }
+
+        public ulong LastDamage
+        {
+            get
+            {
+                return lastDamage;
+            }
+            set
+            {
+                lastDamage = value;
+            }
+        }
+
+        public ulong Damage
+        {
+            get
+            {
+                return damage;
+            }
+            set
+            {
+                damage = value;
+            }
+        }
+
+        public uint Location
+        {
+            get
+            {
+                return location;
+            }
+            set
+            {
+                location = value;
+            }
+        }
+
+        public ulong TravelEndTime
+        {
+            get
+            {
+                return travelEndTime;
+            }
+            set
+            {
+                travelEndTime = value;
             }
         }
 

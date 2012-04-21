@@ -9,13 +9,10 @@ namespace GameServer
 {
     public class CharacterEquipment
     {
-        public enum Part { Head, Shoulders, Chest, Hands, Thighs, Legs, Weapon, Shield };
+        public enum Part { Head, Chest, Legs, Weapon, Shield };
         private ulong id;
         private uint head;
-        private uint shoulders;
         private uint chest;
-        private uint hands;
-        private uint thighs;
         private uint legs;
         private uint weapon;
         private uint shield;
@@ -52,10 +49,7 @@ namespace GameServer
                     while (reader.Read())
                     {
                         head = reader.GetUInt32("head");
-                        shoulders = reader.GetUInt32("shoulders");
                         chest = reader.GetUInt32("chest");
-                        hands = reader.GetUInt32("hands");
-                        thighs = reader.GetUInt32("thighs");
                         legs = reader.GetUInt32("legs");
                         weapon = reader.GetUInt32("weapon");
                         shield = reader.GetUInt32("shield");
@@ -80,18 +74,6 @@ namespace GameServer
             }
         }
 
-        public uint Shoulders
-        {
-            get
-            {
-                return shoulders;
-            }
-            set
-            {
-                shoulders = value;
-            }
-        }
-
         public uint Chest
         {
             get
@@ -101,30 +83,6 @@ namespace GameServer
             set
             {
                 chest = value;
-            }
-        }
-
-        public uint Hands
-        {
-            get
-            {
-                return hands;
-            }
-            set
-            {
-                hands = value;
-            }
-        }
-
-        public uint Thighs
-        {
-            get
-            {
-                return thighs;
-            }
-            set
-            {
-                thighs = value;
             }
         }
 
