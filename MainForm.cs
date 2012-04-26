@@ -275,7 +275,7 @@ namespace GameServer
             string UpdateQuery = "";
 
             //sprawdzenie czy liczba pól i wartości są równe (przynajmniej w teorii)
-            if (args.Length % 2 == 0)
+            if ((args.Length - 4) % 2 != 0)
             {
                 return null;
             }
@@ -288,7 +288,7 @@ namespace GameServer
 
             for (int i = 2; i < args.Length - 2; i++)
             {
-                UpdateQuery += "`" + args[i + 2] + "` = '" + args[i + 2 + fields] + "', ";
+                UpdateQuery += "`" + args[i] + "` = '" + args[i + fields] + "', ";
             }
             UpdateQuery = UpdateQuery.Remove(UpdateQuery.Length - 2, 2);
             UpdateQuery += " WHERE `" + args[1] + "`.`" + args[args.Length - 2] + "` = " + args[args.Length - 1] + "";
