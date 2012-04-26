@@ -286,9 +286,9 @@ namespace GameServer
             //początek zapytania z zdefiniowaną tabelą
             UpdateQuery = "UPDATE `" + dataBase.MySqlBase + "`.`" + args[1] + "` SET ";
 
-            for (int i = 2; i < args.Length - 2; i++)
+            for (int i = 0; i < fields; i++)
             {
-                UpdateQuery += "`" + args[i] + "` = '" + args[i + fields] + "', ";
+                UpdateQuery += "`" + args[i + 2] + "` = '" + args[i + 2 + fields] + "', ";
             }
             UpdateQuery = UpdateQuery.Remove(UpdateQuery.Length - 2, 2);
             UpdateQuery += " WHERE `" + args[1] + "`.`" + args[args.Length - 2] + "` = " + args[args.Length - 1] + "";
@@ -296,27 +296,14 @@ namespace GameServer
             return UpdateQuery;
         }
 
-        private void ExecuteQuery(object query)
+        private void ExecuteQuery(object query, GlobalMySql db)
         {
-            //utworzenie obiektu połączenia
-            MySqlConnection connection = dataBase.Connection;
-            //próba otworzenia połączenia
-            try
-            {
-                connection.Open();
+            //zdefiniowanie zmiennej polecenia w obrębie obiektu połączenia connection
+            MySqlCommand polecenie = db.Connection.CreateCommand();
+            //utworzenie zapytania
+            polecenie.CommandText = (string)query;
 
-                //zdefiniowanie zmiennej polecenia w obrębie obiektu połączenia connection
-                MySqlCommand polecenie = connection.CreateCommand();
-                //utworzenie zapytania
-                polecenie.CommandText = (string)query;
-
-                polecenie.ExecuteNonQuery();
-            }
-            catch
-            {
-                //MessageBox.Show("Nie można połączyć się z bazą danych! Błąd: \n" + ex.Message.ToString(), "Błąd bazy danych", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
+            polecenie.ExecuteNonQuery();
         }
 
         //właściwa obsługa klienta
@@ -400,7 +387,7 @@ namespace GameServer
                                     character = new Character(userID, dataBase);
 
                                     //uaktualnienie w bazie danych daty ostatniego logowania
-                                    ExecuteQuery("UPDATE `" + dataBase.MySqlBase + "`.`player` SET `lastlogin` = '" + GetServerDateTime() + "' WHERE `player`.`id` =" + userID + ";");
+                                    ExecuteQuery("UPDATE `" + dataBase.MySqlBase + "`.`player` SET `lastlogin` = '" + GetServerDateTime() + "' WHERE `player`.`id` =" + userID + ";", dataBase);
                                 }
                                 //utworzenie odpowiedzi
                                 response.Request(ClientCmd.LOGIN);
@@ -448,7 +435,8 @@ namespace GameServer
                              */
                             case ClientCmd.UPDATE_DATA_BASE:
                                 string UpdateQuery = CreateMySqlUpdateQuery(args);
-                                ExecuteQuery(UpdateQuery);
+                                AddLogAsynch(UpdateQuery);
+                                ExecuteQuery(UpdateQuery, dataBase);
                                 //utworzenie odpowiedzi
                                 response.Request(ServerCmd.DATA_BASE_UPDATED);
                                 response.Apply(socket);
