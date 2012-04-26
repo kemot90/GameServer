@@ -269,20 +269,30 @@ namespace GameServer
         {
             /*
              * UAKTUALNIANIE PÓL BAZY DANYCH
-             * kolejność danych: komenda, identyfikator, tabela, pola, wartości
+             * kolejność danych: komenda, tabela, pola, wartości, pole warunku, wartość pola warunku
              */
+            //tutaj będzie przechowywane zapytanie
             string UpdateQuery = "";
-            int fieldsCount = args.Length - 3;
-            if ((fieldsCount % 2) == 0)
+
+            //sprawdzenie czy liczba pól i wartości są równe (przynajmniej w teorii)
+            if (args.Length % 2 == 0)
             {
-                UpdateQuery = "UPDATE `" + dataBase.MySqlBase + "`.`" + args[2] + "` SET ";
-                for (int i = 0; i < fieldsCount / 2; i++)
-                {
-                    UpdateQuery += "`" + args[i + 3] + "` = '" + args[i + 3 + fieldsCount / 2] + "', ";
-                }
-                UpdateQuery = UpdateQuery.Remove(UpdateQuery.Length - 2, 2);
-                UpdateQuery += " WHERE `" + args[2] + "`.`id` = " + args[1] + "";
+                return null;
             }
+
+            //liczba pól, które mają zostać uaktualnione
+            int fields = (args.Length - 4)/2;
+
+            //początek zapytania z zdefiniowaną tabelą
+            UpdateQuery = "UPDATE `" + dataBase.MySqlBase + "`.`" + args[1] + "` SET ";
+
+            for (int i = 2; i < args.Length - 2; i++)
+            {
+                UpdateQuery += "`" + args[i + 2] + "` = '" + args[i + 2 + fields] + "', ";
+            }
+            UpdateQuery = UpdateQuery.Remove(UpdateQuery.Length - 2, 2);
+            UpdateQuery += " WHERE `" + args[1] + "`.`" + args[args.Length - 2] + "` = " + args[args.Length - 1] + "";
+
             return UpdateQuery;
         }
 
@@ -434,7 +444,7 @@ namespace GameServer
                                 break;
                             /*
                              * UAKTUALNIANIE PÓL BAZY DANYCH
-                             * kolejność danych: komenda, identyfikator, tabela, pola, wartości
+                             * kolejność danych: komenda, tabela, pola, wartości, pole warunku, wartość pola warunku
                              */
                             case ClientCmd.UPDATE_DATA_BASE:
                                 string UpdateQuery = CreateMySqlUpdateQuery(args);
