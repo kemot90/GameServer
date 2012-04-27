@@ -286,11 +286,14 @@ namespace GameServer
             //początek zapytania z zdefiniowaną tabelą
             UpdateQuery = "UPDATE `" + dataBase.MySqlBase + "`.`" + args[1] + "` SET ";
 
+            //dodanie argumentów pole=wartość
             for (int i = 0; i < fields; i++)
             {
                 UpdateQuery += "`" + args[i + 2] + "` = '" + args[i + 2 + fields] + "', ";
             }
+            //usunięcie dwóch ostatnich znaków aby pozbyć się ostatniego przecinka
             UpdateQuery = UpdateQuery.Remove(UpdateQuery.Length - 2, 2);
+            //dodanie warunku gdzie pole_jednoznaczne  = wartość
             UpdateQuery += " WHERE `" + args[1] + "`.`" + args[args.Length - 2] + "` = " + args[args.Length - 1] + "";
 
             return UpdateQuery;
@@ -439,6 +442,15 @@ namespace GameServer
                                 ExecuteQuery(UpdateQuery, dataBase);
                                 //utworzenie odpowiedzi
                                 response.Request(ServerCmd.DATA_BASE_UPDATED);
+                                response.Apply(socket);
+                                break;
+                            case ClientCmd.GET_CHARACTER_EQUIPMENT:
+                                response.Request(ServerCmd.CHARACTER_EQUIPMENT);
+                                response.Add(character.Equipment.Head.ToString());
+                                response.Add(character.Equipment.Chest.ToString());
+                                response.Add(character.Equipment.Legs.ToString());
+                                response.Add(character.Equipment.Weapon.ToString());
+                                response.Add(character.Equipment.Shield.ToString());
                                 response.Apply(socket);
                                 break;
                             default:
