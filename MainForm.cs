@@ -37,6 +37,9 @@ namespace GameServer
         //delegat funkcji przyjmującej jako argument stringa
         private delegate void SetString(string str);
 
+        //timer działający w tle odpowiedzianly za informacje o czasie serwera
+        System.Windows.Forms.Timer timer;
+
         //obiekt przechowujący obiekty ubiegające się o dostęp do wątku
         //private Object Sync;
 
@@ -48,6 +51,10 @@ namespace GameServer
 
             //domyślnie serwer jest wyłączony
             isRunning = false;
+            timer = new System.Windows.Forms.Timer();
+            timer.Interval = 1000;
+            timer.Tick += new EventHandler(DisplayServerTime);
+            timer.Start();
 
             //utworzenie gniazda serwera
             try
@@ -87,44 +94,20 @@ namespace GameServer
             );
         }
 
+        private void DisplayServerTime(object sender, EventArgs e)
+        {
+            czasText.Text = GetServerDateTime();
+            timeStampText.Text = GetTimeStamp();
+        }
+
         //zamiana stringa cmd na akcję i ciąg argumentów
-        private string[] cmdToArgs(string command)
+        private string[] CommandsToArguments(string command)
         {
             string[] args = command.Split(';');
             return args;
         }
 
         //metoda włączająca/wyłączająca serwer
-        private void switchSvr_Click(object sender, EventArgs e)
-        {
-            if (isRunning) //jeżeli działa
-            {
-                //to przy wyłączaniu ustaw przycisk do włączania
-                switchSvr.Text = "Włącz";
-
-                //ustaw, że serwer jest nieaktywny
-                isRunning = false;
-
-                //wstrzymanie wątku głównego do czasu zakończenia listenerTh i włączenie go do głównego
-                listenerTh.Join();
-
-                AddLog("[" + GetServerDateTime() + "][Serwer]: Serwer zakończył nasłuchiwanie");
-            }
-            else //jeżeli serwer nie jest w trakcie działania
-            {
-                //to podczas uruchamiania ustaw przycisk do wyłączania
-                switchSvr.Text = "Wyłącz";
-
-                //ustaw, że serwer jest aktywny
-                isRunning = true;
-
-                //ustawienie i uruchomienie nasłuchiwania Listen() w nowym wątku
-                listenerTh = new Thread(Listen);
-                listenerTh.Priority = ThreadPriority.BelowNormal;
-                listenerTh.IsBackground = true;
-                listenerTh.Start();
-            }
-        }
 
         //funkcja logowanie do serwera
         //gdy dane logowanie są poprawne, to zwraca identyfikator gracza
@@ -265,7 +248,7 @@ namespace GameServer
             server.Stop();
         }
 
-        private string CreateMySqlUpdateQuery(string[] args)
+        private string CreateMySqlUpdateQuery(string[] args, ref string log)
         {
             /*
              * UAKTUALNIANIE PÓL BAZY DANYCH
@@ -273,6 +256,8 @@ namespace GameServer
              */
             //tutaj będzie przechowywane zapytanie
             string UpdateQuery = "";
+            //tutaj zostanie zapisany log dla serwera
+            log = "Aktualizacja w tabeli '" + args[1] + "' pól: ";
 
             //sprawdzenie czy liczba pól i wartości są równe (przynajmniej w teorii)
             if ((args.Length - 4) % 2 != 0)
@@ -289,10 +274,12 @@ namespace GameServer
             //dodanie argumentów pole=wartość
             for (int i = 0; i < fields; i++)
             {
+                log += args[i + 2] + " => " + args[i + 2 + fields] + ", ";
                 UpdateQuery += "`" + args[i + 2] + "` = '" + args[i + 2 + fields] + "', ";
             }
             //usunięcie dwóch ostatnich znaków aby pozbyć się ostatniego przecinka
             UpdateQuery = UpdateQuery.Remove(UpdateQuery.Length - 2, 2);
+            log = log.Remove(log.Length - 2, 2);
             //dodanie warunku gdzie pole_jednoznaczne  = wartość
             UpdateQuery += " WHERE `" + args[1] + "`.`" + args[args.Length - 2] + "` = " + args[args.Length - 1] + "";
 
@@ -367,7 +354,7 @@ namespace GameServer
                         Command response = new Command();
                         
                         //zamiana lini komendy na nazwę akcji args[0] i argumenty - reszta tablicy
-                        string[] args = cmdToArgs(cmd);
+                        string[] args = CommandsToArguments(cmd);
                         
                         switch (args[0])
                         {
@@ -395,6 +382,7 @@ namespace GameServer
                                 //utworzenie odpowiedzi
                                 response.Request(ClientCmd.LOGIN);
                                 response.Add(userID.ToString());
+                                response.Add(DateTime.UtcNow.Ticks.ToString());
                                 response.Apply(socket);
                                 break;
 
@@ -426,6 +414,8 @@ namespace GameServer
                                 response.Add(character.Status);
                                 response.Add(character.LastDamage.ToString());
                                 response.Add(character.Damage.ToString());
+                                response.Add(character.LastFatigue.ToString());
+                                response.Add(character.Fatigue.ToString());
                                 response.Add(character.Location.ToString());
                                 response.Add(character.TravelEndTime.ToString());
 
@@ -437,8 +427,9 @@ namespace GameServer
                              * kolejność danych: komenda, tabela, pola, wartości, pole warunku, wartość pola warunku
                              */
                             case ClientCmd.UPDATE_DATA_BASE:
-                                string UpdateQuery = CreateMySqlUpdateQuery(args);
-                                AddLogAsynch(UpdateQuery);
+                                string log = "";
+                                string UpdateQuery = CreateMySqlUpdateQuery(args, ref log);
+                                AddLogAsynch("[" + GetServerDateTime() + "][ " + clientName + " ]: " + log);
                                 ExecuteQuery(UpdateQuery, dataBase);
                                 //utworzenie odpowiedzi
                                 response.Request(ServerCmd.DATA_BASE_UPDATED);
@@ -501,6 +492,37 @@ namespace GameServer
             long ticks = DateTime.UtcNow.Ticks - DateTime.Parse("01/01/1970 00:00:00").Ticks;
             ticks /= 10000000; //Convert windows ticks to seconds
             return ticks.ToString();
+        }
+
+        private void onoffToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (isRunning) //jeżeli działa
+            {
+                //to przy wyłączaniu ustaw przycisk do włączania
+                onoffToolStripMenuItem.Text = "Włącz";
+
+                //ustaw, że serwer jest nieaktywny
+                isRunning = false;
+
+                //wstrzymanie wątku głównego do czasu zakończenia listenerTh i włączenie go do głównego
+                listenerTh.Join();
+
+                AddLog("[" + GetServerDateTime() + "][Serwer]: Serwer zakończył nasłuchiwanie");
+            }
+            else //jeżeli serwer nie jest w trakcie działania
+            {
+                //to podczas uruchamiania ustaw przycisk do wyłączania
+                onoffToolStripMenuItem.Text = "Wyłącz";
+
+                //ustaw, że serwer jest aktywny
+                isRunning = true;
+
+                //ustawienie i uruchomienie nasłuchiwania Listen() w nowym wątku
+                listenerTh = new Thread(Listen);
+                listenerTh.Priority = ThreadPriority.BelowNormal;
+                listenerTh.IsBackground = true;
+                listenerTh.Start();
+            }
         }
     }
 }

@@ -19,6 +19,8 @@ namespace GameServer
         private ulong gold;
         private ulong lastDamage;
         private ulong damage;
+        private ulong lastFatigue;
+        private ulong fatigue;
         private ulong travelEndTime;
         private string status;
 
@@ -90,6 +92,9 @@ namespace GameServer
                         status = reader.GetString("status");
                         lastDamage = reader.GetUInt64("lastDamage");
                         damage = reader.GetUInt64("damage");
+                        lastFatigue = reader.GetUInt64("lastFatigue");
+                        fatigue = reader.GetUInt64("fatigue");
+
                         location = reader.GetUInt32("location");
                         travelEndTime = reader.GetUInt64("travelEndTime");
                     }
@@ -306,6 +311,22 @@ namespace GameServer
             set
             {
                 damage = value;
+            }
+        }
+
+        public ulong LastFatigue
+        {
+            get
+            {
+                return lastFatigue;
+            }
+        }
+
+        public ulong Fatigue
+        {
+            get
+            {
+                return fatigue;
             }
         }
 
