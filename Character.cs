@@ -22,6 +22,7 @@ namespace GameServer
         private ulong lastFatigue;
         private ulong fatigue;
         private ulong travelEndTime;
+        private uint travelDestination;
         private string status;
 
         //obiekt bieżącego wyposażenia
@@ -97,6 +98,7 @@ namespace GameServer
 
                         location = reader.GetUInt32("location");
                         travelEndTime = reader.GetUInt64("travelEndTime");
+                        travelDestination = reader.GetUInt32("travelDestination");
                     }
                 }
             }
@@ -351,6 +353,18 @@ namespace GameServer
             set
             {
                 travelEndTime = value;
+            }
+        }
+
+        public uint TravelDestination
+        {
+            get
+            {
+                return travelDestination;
+            }
+            set
+            {
+                travelDestination = value;
             }
         }
 

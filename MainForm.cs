@@ -418,6 +418,7 @@ namespace GameServer
                                 response.Add(character.Fatigue.ToString());
                                 response.Add(character.Location.ToString());
                                 response.Add(character.TravelEndTime.ToString());
+                                response.Add(character.TravelDestination.ToString());
 
                                 response.Apply(socket);
 
