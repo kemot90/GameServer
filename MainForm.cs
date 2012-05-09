@@ -34,6 +34,8 @@ namespace GameServer
         //utworzenie obiektu zawierającego dane i funkcje mapy
         private Map map;
 
+        private Skills skills;
+
         //obiekt ustawień aplikacji
         private Properties.Settings settings = Properties.Settings.Default;
 
@@ -82,6 +84,8 @@ namespace GameServer
 
             //stworzenie obiektu z danymi mapy
             map = new Map(dataBase);
+
+            skills = new Skills(dataBase);
         }
 
         //dodanie tekstu do okna logów synchronicznie
@@ -462,6 +466,20 @@ namespace GameServer
                                     response.Add(city.LeftCoordinate.ToString());
                                     response.Add(city.TopCoordinate.ToString());
                                     response.Add(city.Icon);
+                                }
+                                response.Apply(socket);
+                                break;
+                            case ClientCmd.GET_SKILLS:
+                                response.Request(ServerCmd.SKILLS);
+                                //AddLogAsynch("Pobiernie umiejętności");
+                                foreach (Skill skill in skills.SkillList)
+                                {
+                                    response.Add(skill.Id.ToString());
+                                    response.Add(skill.AccessLevel.ToString());
+                                    response.Add(skill.Strength.ToString());
+                                    response.Add(skill.Stamina.ToString());
+                                    response.Add(skill.Dexterity.ToString());
+                                    response.Add(skill.Luck.ToString());
                                 }
                                 response.Apply(socket);
                                 break;
