@@ -31,6 +31,9 @@ namespace GameServer
         //utworzenie obiektu zawierającego ustawienia i połączenie z bazą danych
         public GlobalMySql dataBase;
 
+        //utworzenie obiektu zawierającego dane i funkcje mapy
+        private Map map;
+
         //obiekt ustawień aplikacji
         private Properties.Settings settings = Properties.Settings.Default;
 
@@ -76,6 +79,9 @@ namespace GameServer
             {
                 AddLog("Nie udało się nawiązać połączenia z bazą danych. Aplikacja nie będzie działać poprawanie.");
             }
+
+            //stworzenie obiektu z danymi mapy
+            map = new Map(dataBase);
         }
 
         //dodanie tekstu do okna logów synchronicznie
@@ -443,6 +449,20 @@ namespace GameServer
                                 response.Add(character.Equipment.Legs.ToString());
                                 response.Add(character.Equipment.Weapon.ToString());
                                 response.Add(character.Equipment.Shield.ToString());
+                                response.Apply(socket);
+                                break;
+                            case ClientCmd.GET_CITIES:
+                                response.Request(ServerCmd.CITIES);
+                                response.Add(map.CitiesNumber.ToString());
+                                foreach (City city in map.CityData)
+                                {
+                                    response.Add(city.Id.ToString());
+                                    response.Add(city.Name);
+                                    response.Add(city.AccessLevel.ToString());
+                                    response.Add(city.LeftCoordinate.ToString());
+                                    response.Add(city.TopCoordinate.ToString());
+                                    response.Add(city.Icon);
+                                }
                                 response.Apply(socket);
                                 break;
                             default:
