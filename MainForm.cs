@@ -36,6 +36,10 @@ namespace GameServer
 
         private Skills skills;
 
+        private ItemsArmor armors;
+
+        private ItemsWeapon weapons;
+
         //obiekt ustawień aplikacji
         private Properties.Settings settings = Properties.Settings.Default;
 
@@ -90,6 +94,10 @@ namespace GameServer
             map = new Map(dataBase);
 
             skills = new Skills(dataBase);
+
+            armors = new ItemsArmor(dataBase);
+
+            weapons = new ItemsWeapon(dataBase);
         }
 
         //dodanie tekstu do okna logów synchronicznie
@@ -507,6 +515,44 @@ namespace GameServer
                                     response.Add(mb.Dexterity.ToString());
                                     response.Add(mb.Stamina.ToString());
                                     response.Add(mb.GoldDrop.ToString());
+                                }
+                                response.Send(socket);
+                                break;
+                            case ClientCmd.GET_ITEMS_ARMORS:
+                                response.Request(ServerCmd.ARMORS);
+                                // Pobieranie pancerzy
+                                foreach (ItemArmor armor in armors.ItemAList)
+                                {
+                                    response.Add(armor.Id.ToString());
+                                    response.Add(armor.Type.ToString());
+                                    response.Add(armor.Price.ToString());
+                                    response.Add(armor.Name.ToString());
+                                    response.Add(armor.Part.ToString());
+                                    response.Add(armor.Armor.ToString());
+                                    response.Add(armor.Strength.ToString());
+                                    response.Add(armor.Stamina.ToString());
+                                    response.Add(armor.Dexterity.ToString());
+                                    response.Add(armor.Luck.ToString());
+
+                                }
+                                response.Send(socket);
+                                break;
+                            case ClientCmd.GET_ITEMS_WEAPONS:
+                                response.Request(ServerCmd.WEAPONS);
+                                // Pobieranie pancerzy
+                                foreach (ItemWeapon weapon in weapons.ItemWList)
+                                {
+                                    response.Add(weapon.Id.ToString());
+                                    response.Add(weapon.Type.ToString());
+                                    response.Add(weapon.Price.ToString());
+                                    response.Add(weapon.Name.ToString());
+                                    response.Add(weapon.Min_attack.ToString());
+                                    response.Add(weapon.Max_attack.ToString());
+                                    response.Add(weapon.Strength.ToString());
+                                    response.Add(weapon.Stamina.ToString());
+                                    response.Add(weapon.Dexterity.ToString());
+                                    response.Add(weapon.Luck.ToString());
+
                                 }
                                 response.Send(socket);
                                 break;
