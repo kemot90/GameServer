@@ -68,18 +68,22 @@ namespace GameServer
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Nie udało się utworzyć gniazda serwera. Dalsze korzystanie z aplikacji może generować błędy! Uruchom aplikację jeszcze raz.\nDebuger message:\n" + ex.ToString(), "Błąd tworzenia gniazda serwera!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                AddLog("[" + GetServerDateTime() + "][Serwer]: Nie udało się utworzyć gniazda serwera. Dalsze korzystanie z aplikacji może generować błędy! Uruchom aplikację jeszcze raz.\nDebuger message:\n" + ex.ToString());
             }
 
             dataBase = new GlobalMySql();
 
             try
             {
-                dataBase.Connection.Open();
+                if (dataBase.Connection.State != ConnectionState.Open)
+                {
+                    dataBase.Connection.Open();
+                }
+                //AddLog("[" + GetServerDateTime() + "][Serwer]: Pomyślnie połączono z hostem bazy danych '" + dataBase.MySqlHost + "' do bazy '" + dataBase.MySqlBase + "'.");
             }
             catch
             {
-                AddLog("Nie udało się nawiązać połączenia z bazą danych. Aplikacja nie będzie działać poprawanie.");
+                AddLog("[" + GetServerDateTime() + "][Serwer]: Nie udało się nawiązać połączenia z bazą danych. Aplikacja nie będzie działać poprawanie.");
             }
 
             //stworzenie obiektu z danymi mapy
@@ -210,7 +214,7 @@ namespace GameServer
             //utworzenie odpowiedzi
             response.Request(ServerCmd.PLAYER_DATA);
             response.Add(dane);
-            response.Apply(socket);
+            response.Send(socket);
 
             AddLogAsynch("[" + GetServerDateTime() + "][ " + dane[0] + " ]: Pobrał dane gracza.");
             return true;
@@ -219,8 +223,7 @@ namespace GameServer
         //nasłuchiwanie i dodawanie klientów
         private void Listen()
         {
-            AddLogAsynch("[" + GetServerDateTime() + "][Serwer]: Serwer rozpoczął nasłuchiwanie");
-            AddLogAsynch("Now time seconds: " + GetTimeStamp());
+            AddLogAsynch("[" + GetServerDateTime() + "][Serwer]: Serwer rozpoczął nasłuchiwanie.");
             //dopóki zmienna sterująca stanem działania serwera jest ustawiona na true
             //dopóki serwer nasłuchuje
             while (isRunning)
@@ -393,7 +396,7 @@ namespace GameServer
                                 response.Request(ClientCmd.LOGIN);
                                 response.Add(userID.ToString());
                                 response.Add(DateTime.UtcNow.Ticks.ToString());
-                                response.Apply(socket);
+                                response.Send(socket);
                                 break;
 
                             /*
@@ -430,7 +433,7 @@ namespace GameServer
                                 response.Add(character.TravelEndTime.ToString());
                                 response.Add(character.TravelDestination.ToString());
 
-                                response.Apply(socket);
+                                response.Send(socket);
 
                                 break;
                             /*
@@ -442,9 +445,6 @@ namespace GameServer
                                 string UpdateQuery = CreateMySqlUpdateQuery(args, ref log);
                                 AddLogAsynch("[" + GetServerDateTime() + "][ " + clientName + " ]: " + log);
                                 ExecuteQuery(UpdateQuery, dataBase);
-                                //utworzenie odpowiedzi
-                                response.Request(ServerCmd.DATA_BASE_UPDATED);
-                                response.Apply(socket);
                                 break;
                             case ClientCmd.GET_CHARACTER_EQUIPMENT:
                                 response.Request(ServerCmd.CHARACTER_EQUIPMENT);
@@ -453,7 +453,7 @@ namespace GameServer
                                 response.Add(character.Equipment.Legs.ToString());
                                 response.Add(character.Equipment.Weapon.ToString());
                                 response.Add(character.Equipment.Shield.ToString());
-                                response.Apply(socket);
+                                response.Send(socket);
                                 break;
                             case ClientCmd.GET_CITIES:
                                 response.Request(ServerCmd.CITIES);
@@ -467,7 +467,7 @@ namespace GameServer
                                     response.Add(city.TopCoordinate.ToString());
                                     response.Add(city.Icon);
                                 }
-                                response.Apply(socket);
+                                response.Send(socket);
                                 break;
                             case ClientCmd.GET_SKILLS:
                                 response.Request(ServerCmd.SKILLS);
@@ -481,7 +481,34 @@ namespace GameServer
                                     response.Add(skill.Dexterity.ToString());
                                     response.Add(skill.Luck.ToString());
                                 }
-                                response.Apply(socket);
+                                response.Send(socket);
+                                break;
+                            case ClientCmd.GET_SHORTEST_PATH:
+                                response.Request(ServerCmd.SHORTEST_PATH);
+                                response.Add(map.GetTime(uint.Parse(args[1]), uint.Parse(args[2])).ToString());
+                                response.Send(socket);
+                                break;
+                            case ClientCmd.GET_ENEMIES:
+                                //odpyta bazke o przeciwnikow dla zadanego id okolicy
+                                uint surr = uint.Parse(args[1]);
+                                Enemies en = new Enemies(surr, dataBase);
+
+                                response.Request(ServerCmd.ENEMIES);
+                                response.Add(en.MobsCount.ToString());
+
+                                foreach (Mob mb in en.EnemiesList)
+                                {
+                                    response.Add(mb.Id.ToString());
+                                    response.Add(mb.Name.ToString());
+                                    response.Add(mb.Level.ToString());
+                                    response.Add(mb.BonusHP.ToString());
+                                    response.Add(mb.Strength.ToString());
+                                    response.Add(mb.Luck.ToString());
+                                    response.Add(mb.Dexterity.ToString());
+                                    response.Add(mb.Stamina.ToString());
+                                    response.Add(mb.GoldDrop.ToString());
+                                }
+                                response.Send(socket);
                                 break;
                             default:
                                 AddLogAsynch("[" + GetServerDateTime() + "][Klient]: Odebrano nieznaną komendę!");
@@ -546,12 +573,27 @@ namespace GameServer
                 //wstrzymanie wątku głównego do czasu zakończenia listenerTh i włączenie go do głównego
                 listenerTh.Join();
 
-                AddLog("[" + GetServerDateTime() + "][Serwer]: Serwer zakończył nasłuchiwanie");
+                AddLog("[" + GetServerDateTime() + "][Serwer]: Serwer zakończył nasłuchiwanie.");
             }
             else //jeżeli serwer nie jest w trakcie działania
             {
                 //to podczas uruchamiania ustaw przycisk do wyłączania
                 onoffToolStripMenuItem.Text = "Wyłącz";
+
+                dataBase.RefreshConnection();
+
+                try
+                {
+                    if (dataBase.Connection.State != ConnectionState.Open)
+                    {
+                        dataBase.Connection.Open();
+                    }
+                    AddLog("[" + GetServerDateTime() + "][Serwer]: Pomyślnie połączono z hostem bazy danych '" + dataBase.MySqlHost + "' do bazy '" + dataBase.MySqlBase + "'.");
+                }
+                catch
+                {
+                    AddLog("[" + GetServerDateTime() + "][Serwer]: Nie udało się nawiązać połączenia z bazą danych. Aplikacja nie będzie działać poprawanie.");
+                }
 
                 //ustaw, że serwer jest aktywny
                 isRunning = true;

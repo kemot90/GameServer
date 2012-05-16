@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Windows;
-using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 
@@ -17,6 +15,8 @@ namespace Commands
         public const string GET_SKILLS = "GET_SKILLS";
         public const string GET_CITIES = "GET_CITIES";
         public const string UPDATE_DATA_BASE = "UPDATE_DATA_BASE";
+        public const string GET_SHORTEST_PATH = "GET_SHORTEST_PATH";
+        public const string GET_ENEMIES = "GET_ENEMIES";
     }
     public class ServerCmd
     {
@@ -26,6 +26,8 @@ namespace Commands
         public const string CITIES = "CITIES";
         public const string SKILLS = "SKILLS";
         public const string DATA_BASE_UPDATED = "DATA_BASE_UPDATED";
+        public const string SHORTEST_PATH = "SHORTEST_PATH";
+        public const string ENEMIES = "ENEMIES";
     }
     public class Command
     {
@@ -58,14 +60,31 @@ namespace Commands
         {
             get
             {
+                cmdString = "";
+                foreach (string arg in args)
+                {
+                    cmdString += ";" + arg;
+                }
+                cmdString = cmdString.Remove(0, 1);
+
                 return cmdString;
             }
         }
+
         //jako tablicę bajtów
         public byte[] Byte
         {
             get
             {
+                cmdString = "";
+                foreach (string arg in args)
+                {
+                    cmdString += ";" + arg;
+                }
+                cmdString = cmdString.Remove(0, 1);
+
+                cmd = code.GetBytes(cmdString);
+
                 return cmd;
             }
         }
@@ -76,6 +95,7 @@ namespace Commands
         {
             args.Add(argument);
         }
+
         //dodanie tablicy argumentów
         public void Add(string[] arguments)
         {
@@ -91,6 +111,7 @@ namespace Commands
         {
             args.Insert(index, argument);
         }
+
         //dodanie tablicy argumentów
         public void Insert(int index, string[] arguments)
         {
@@ -117,7 +138,7 @@ namespace Commands
         }
 
         //zatwierdzanie argumentów i wysłanie przez gniazdo podane jako arguement
-        public string Apply(Socket client, bool ExpectedResponse = false)
+        public string[] Send(Socket client, bool ExpectedResponse = false)
         {
             //zmienne lokalne
 
@@ -143,6 +164,7 @@ namespace Commands
                 {
                     client.Send(BitConverter.GetBytes(cmd.Length));
                     client.Send(cmd);
+                    Clear();
                     while (ExpectedResponse)
                     {
                         if (client.Available > 0)
@@ -156,7 +178,7 @@ namespace Commands
                             else
                             {
                                 buf = new byte[packageSize];
-                                return code.GetString(buf, 0, client.Receive(buf));
+                                return CommandToArguments(code.GetString(buf, 0, client.Receive(buf)));
                             }
                         }
                         Thread.Sleep(1);
@@ -173,6 +195,7 @@ namespace Commands
                 return null;
             }
         }
+
         //czyszczenie komendy
         public void Clear()
         {
@@ -180,6 +203,13 @@ namespace Commands
             cmdString = null;
             args.Clear();
             isRequest = false;
+        }
+
+        //zamiana stringa cmd na żądanie i ciąg argumentów
+        private string[] CommandToArguments(string command)
+        {
+            string[] args = command.Split(';');
+            return args;
         }
     }
 }

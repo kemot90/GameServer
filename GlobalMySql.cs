@@ -60,6 +60,10 @@ namespace GameServer
         }
         public string MySqlHost
         {
+            get
+            {
+                return mysqlHost;
+            }
             set
             {
                 mysqlHost = value;
