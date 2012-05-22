@@ -28,6 +28,9 @@ namespace GameServer
         //obiekt bieżącego wyposażenia
         private CharacterEquipment equipment;
 
+        //obiekt przedmiotów gracza
+        private CharacterStorage storage;
+
         private GlobalMySql dataBase;
 
         public Character(ulong playerId, GlobalMySql GlobalMySqlObject)
@@ -41,6 +44,7 @@ namespace GameServer
             dataBase = GlobalMySqlObject;
 
             equipment = new CharacterEquipment(playerId, GlobalMySqlObject);
+            storage = new CharacterStorage(playerId, dataBase);
 
             if (dataBase.Connection.State != ConnectionState.Open)
             {
@@ -107,6 +111,8 @@ namespace GameServer
                 //
             }
         }
+
+        #region Akcesory
 
         public ulong Id
         {
@@ -280,6 +286,14 @@ namespace GameServer
             }
         }
 
+        public CharacterStorage CharacterSotrage
+        {
+            get
+            {
+                return storage;
+            }
+        }
+
         public string Status
         {
             get
@@ -372,5 +386,7 @@ namespace GameServer
         {
             throw new System.NotImplementedException();
         }
+
+        #endregion
     }
 }

@@ -70,10 +70,75 @@ namespace GameServer
         }
     }
 
+    public class Spot
+    {
+        private uint id_loc;
+        private uint id_city;
+        private char type;
+        private string name;
+        private uint leftCoordinate;
+        private uint topCoordinate;
+
+        public Spot(uint _id_loc, uint _id_city, char _type, string _name, uint _leftCoordinate, uint _topCoordinate)
+        {
+            id_loc = _id_loc;
+            id_city = _id_city;
+            type = _type;
+            name = _name;
+            leftCoordinate = _leftCoordinate;
+            topCoordinate = _topCoordinate;
+        }
+        public uint IdLoc
+        {
+            get
+            {
+                return id_loc;
+            }
+        }
+        public uint IdCity
+        {
+            get
+            {
+                return id_city;
+            }
+        }
+        public char Type
+        {
+            get
+            {
+                return type;
+            }
+        }
+        public string Name
+        {
+            get
+            {
+                return name;
+            }
+        }
+        public uint LeftCoordinate
+        {
+            get
+            {
+                return leftCoordinate;
+            }
+        }
+        public uint TopCoordinate
+        {
+            get
+            {
+                return topCoordinate;
+            }
+        }
+    }
+
     public class Map
     {
         //lista obiektów typu City przechowujących dane o miastach
         private List<City> cityData = new List<City>();
+
+        //lista obiektów typu Spot przechowujących dane o okolicach
+        private List<Spot> spotData = new List<Spot>();
 
         //lista połączeń pomiędzy miastami
         private List<Connection> connections = new List<Connection>();
@@ -86,6 +151,9 @@ namespace GameServer
 
         //liczba miast
         private uint citiesNumber;
+
+        //liczba okolic
+        private uint spotsNumber;
 
         //największy identyfikator miasta
         private uint maxId;
@@ -181,6 +249,39 @@ namespace GameServer
             {
                 //
             }
+
+            //utworznie zapytania pobierającego dane o spotach
+            query.CommandText = "SELECT * FROM `surroundings`";
+
+            //pobranie danych o spotach
+            try
+            {
+                using (MySqlDataReader reader = query.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        //utworznie obiektu typu Spot z danymi z pojedynczego rekordu
+                        Spot spot = new Spot(
+                            reader.GetUInt32("id_loc"),
+                            reader.GetUInt32("id_city"),
+                            reader.GetChar("type"),
+                            reader.GetString("name"),
+                            reader.GetUInt32("leftCoordinate"),
+                            reader.GetUInt32("topCoordinate")
+                            );
+
+                        //dodanie obiektu do listy spotów
+                        spotData.Add(spot);
+
+                        //zwiększenie liczby miast
+                        spotsNumber++;
+                    }
+                }
+            }
+            catch
+            {
+                //
+            }
         }
 
         //utworzenie połączenia dwóch lokacji
@@ -229,6 +330,20 @@ namespace GameServer
             get
             {
                 return citiesNumber;
+            }
+        }
+        public List<Spot> SpotData
+        {
+            get
+            {
+                return spotData;
+            }
+        }
+        public uint SpotsNumber
+        {
+            get
+            {
+                return spotsNumber;
             }
         }
     }

@@ -4,6 +4,8 @@
     {
         private ulong bonusHP;
         private uint goldDrop;
+        private uint expDrop;
+        private string icon_name;
 
         //konstruktor
         public Mob(ulong _id,
@@ -14,7 +16,9 @@
                         uint _luck,
                         uint _dexterity,
                         uint _stamina,
-                        uint _goldDrop
+                        uint _goldDrop,
+                        uint _expDrop,
+                        string _icon_name
                         )
         {
             id = _id;
@@ -26,8 +30,10 @@
             dexterity = _dexterity;
             stamina = _stamina;
             goldDrop = _goldDrop;
+            expDrop = _expDrop;
+            icon_name = _icon_name;
         }
-               
+
         #region AKCESORY
         public ulong Id
         {
@@ -50,7 +56,7 @@
             }
             set
             {
-                dexterity = value;                
+                dexterity = value;
             }
         }
 
@@ -74,7 +80,7 @@
             }
             set
             {
-                luck = value;                
+                luck = value;
             }
         }
 
@@ -135,6 +141,30 @@
             set
             {
                 bonusHP = value;
+            }
+        }
+
+        public uint ExpDrop
+        {
+            get
+            {
+                return expDrop;
+            }
+            set
+            {
+                expDrop = value;
+            }
+        }
+
+        public string IconName
+        {
+            get
+            {
+                return icon_name;
+            }
+            set
+            {
+                icon_name = value;
             }
         }
 

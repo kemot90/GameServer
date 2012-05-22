@@ -14,7 +14,7 @@ namespace GameServer
         //tutaj będą trzymane wszystkie potworki w danej okolicy
         private List<Mob> enemiesList;
         private uint mobsCount = 0;
-        
+
         private GlobalMySql dataBase;
 
         //konstruktor
@@ -40,7 +40,7 @@ namespace GameServer
             MySqlCommand query = dataBase.Connection.CreateCommand();
 
             //wybierze potwory przypisane do zadanej lokalizacji
-            query.CommandText = "SELECT C.id_creature, C.name, C.level, C.bonusHP, C.strength, C.luck, C.dexterity, C.stamina, C.gold_drop FROM creature C, wystepowanie W WHERE (W.id_surr = " + location + " AND W.id_creature = C.id_creature)";
+            query.CommandText = "SELECT C.id_creature, C.name, C.level, C.bonusHP, C.strength, C.luck, C.dexterity, C.stamina, C.gold_drop, C.exp, C.icon_name FROM creature C, wystepowanie W WHERE (W.id_surr = " + location + " AND W.id_creature = C.id_creature)";
 
             try
             {
@@ -57,7 +57,9 @@ namespace GameServer
                             reader.GetUInt32("luck"),
                             reader.GetUInt32("dexterity"),
                             reader.GetUInt32("stamina"),
-                            reader.GetUInt32("gold_drop")                         
+                            reader.GetUInt32("gold_drop"),
+                            reader.GetUInt32("exp"),
+                            reader.GetString("icon_name")
                             );
 
                         enemiesList.Add(mb);

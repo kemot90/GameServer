@@ -52,6 +52,7 @@
   <ItemGroup>
     <Compile Include="Character.cs" />
     <Compile Include="CharacterEquipment.cs" />
+    <Compile Include="CharacterStorage.cs" />
     <Compile Include="Commands.cs" />
     <Compile Include="Creature.cs" />
     <Compile Include="Dijkstra.cs" />
@@ -95,7 +96,7 @@
     <None Include="app.config">
       <SubType>Designer</SubType>
     </None>
-    <None Include="RPGameServerClass.cd" />
+    <None Include="ClassDiagram1.cd" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>

@@ -463,6 +463,16 @@ namespace GameServer
                                 response.Add(character.Equipment.Shield.ToString());
                                 response.Send(socket);
                                 break;
+                            case ClientCmd.GET_CHARACTER_STORAGE:
+                                response.Request(ServerCmd.CHARACTER_STORAGE);
+                                foreach (Storage position in character.CharacterSotrage.StorageList)
+                                {
+                                    response.Add(position.CharacterId.ToString());
+                                    response.Add(position.ItemId.ToString());
+                                    response.Add(position.Amount.ToString());
+                                }
+                                response.Send(socket);
+                                break;
                             case ClientCmd.GET_CITIES:
                                 response.Request(ServerCmd.CITIES);
                                 response.Add(map.CitiesNumber.ToString());
@@ -474,6 +484,21 @@ namespace GameServer
                                     response.Add(city.LeftCoordinate.ToString());
                                     response.Add(city.TopCoordinate.ToString());
                                     response.Add(city.Icon);
+                                }
+                                response.Send(socket);
+                                break;
+                            case ClientCmd.GET_SPOTS:
+                                response.Request(ServerCmd.SPOTS);
+                                //response.Add("0");
+                                response.Add(map.SpotsNumber.ToString());
+                                foreach (Spot spot in map.SpotData)
+                                {
+                                    response.Add(spot.IdLoc.ToString());
+                                    response.Add(spot.IdCity.ToString());
+                                    response.Add(spot.Type.ToString());
+                                    response.Add(spot.Name);
+                                    response.Add(spot.LeftCoordinate.ToString());
+                                    response.Add(spot.TopCoordinate.ToString());
                                 }
                                 response.Send(socket);
                                 break;
@@ -515,6 +540,8 @@ namespace GameServer
                                     response.Add(mb.Dexterity.ToString());
                                     response.Add(mb.Stamina.ToString());
                                     response.Add(mb.GoldDrop.ToString());
+                                    response.Add(mb.ExpDrop.ToString());
+                                    response.Add(mb.IconName.ToString());
                                 }
                                 response.Send(socket);
                                 break;
@@ -533,7 +560,6 @@ namespace GameServer
                                     response.Add(armor.Stamina.ToString());
                                     response.Add(armor.Dexterity.ToString());
                                     response.Add(armor.Luck.ToString());
-
                                 }
                                 response.Send(socket);
                                 break;
@@ -552,9 +578,26 @@ namespace GameServer
                                     response.Add(weapon.Stamina.ToString());
                                     response.Add(weapon.Dexterity.ToString());
                                     response.Add(weapon.Luck.ToString());
-
                                 }
                                 response.Send(socket);
+                                break;
+                            case ClientCmd.GET_ITEM_BY_ID:
+                                Item itm = character.CharacterSotrage.GetItemById(uint.Parse(args[1]));
+                                response.Request(ServerCmd.ITEM_BY_ID);
+                                response.Add(itm.Id.ToString());
+                                response.Add(itm.Name);
+                                response.Add(itm.Type);
+                                response.Add(itm.Price.ToString());
+                                response.Add(itm.Icon);
+                                response.Send(socket);
+                                break;
+                            case ClientCmd.REMOVE_ONE_ITEM:
+                                character.CharacterSotrage.RemoveOneItem(uint.Parse(args[1]));
+                                AddLogAsynch("[" + GetServerDateTime() + "][ " + clientName + " ]: Usunięto 1 szt. przedmiotu o ID = " + args[1]);
+                                break;
+                            case ClientCmd.ADD_ITEM:
+                                character.CharacterSotrage.AddItem(uint.Parse(args[1]), uint.Parse(args[2]));
+                                AddLogAsynch("[" + GetServerDateTime() + "][ " + clientName + " ]: Dodano " + args[2] + " szt. przedmiotu o ID = " + args[1]);
                                 break;
                             default:
                                 AddLogAsynch("[" + GetServerDateTime() + "][Klient]: Odebrano nieznaną komendę!");
@@ -627,6 +670,15 @@ namespace GameServer
                 onoffToolStripMenuItem.Text = "Wyłącz";
 
                 dataBase.RefreshConnection();
+
+                //stworzenie obiektu z danymi mapy
+                map = new Map(dataBase);
+
+                skills = new Skills(dataBase);
+
+                armors = new ItemsArmor(dataBase);
+
+                weapons = new ItemsWeapon(dataBase);
 
                 try
                 {
